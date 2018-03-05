@@ -437,7 +437,7 @@ public class BluetoothFragment extends Fragment {
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    if (readMessage.equals("deleteAll")) {
+                    if (readMessage.equals("deleteAll") && !isHost) {
                         mConversationArrayAdapter.clear();
                     }
                     else if (readMessage.contains("delete")) {
