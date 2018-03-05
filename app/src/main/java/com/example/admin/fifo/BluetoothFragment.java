@@ -155,6 +155,7 @@ public class BluetoothFragment extends Fragment {
 
     // TODO: WHEN CUSTOMER IS REMOVED FOR ANY REASON, EXPLICITLY CALL CANCEL() ON BOTH ENDS
     private void updateDevices() {
+        devices = mChatService.getDevices();
         for (BluetoothDevice device : devices) {
             mChatService.stop();
             mChatService.start();
@@ -519,7 +520,6 @@ public class BluetoothFragment extends Fragment {
                 .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
-        devices.add(device);
         // Attempt to connect to the device
         mChatService.connect(device, secure);
     }

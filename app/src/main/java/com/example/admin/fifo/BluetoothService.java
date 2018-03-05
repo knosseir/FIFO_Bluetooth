@@ -29,6 +29,8 @@ import android.util.Log;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.UUID;
 
 /**
@@ -66,6 +68,9 @@ public class BluetoothService {
     public static final int STATE_LISTEN = 1;     // now listening for incoming connections
     public static final int STATE_CONNECTING = 2; // now initiating an outgoing connection
     public static final int STATE_CONNECTED = 3;  // now connected to a remote device
+
+    private Set<BluetoothDevice> devices = new HashSet<>();
+
 
     /**
      * Constructor. Prepares a new BluetoothChat session.
@@ -203,8 +208,15 @@ public class BluetoothService {
         bundle.putString(Constants.DEVICE_NAME, device.getName());
         msg.setData(bundle);
         mHandler.sendMessage(msg);
+
+        devices.add(device);
+
         // Update UI title
         updateUserInterfaceTitle();
+    }
+
+    public Set<BluetoothDevice> getDevices() {
+        return devices;
     }
 
     /**
