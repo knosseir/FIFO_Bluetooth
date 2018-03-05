@@ -36,6 +36,10 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.Set;
+
 /**
  * This fragment controls Bluetooth to communicate with other devices.
  */
@@ -85,6 +89,8 @@ public class BluetoothFragment extends Fragment {
      * Member object for the chat services
      */
     private BluetoothService mChatService = null;
+
+    private Set<BluetoothDevice> devices = new HashSet<>();
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -143,6 +149,18 @@ public class BluetoothFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container,
                              @Nullable Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_bluetooth_chat, container, false);
+    }
+
+    // TODO: WHEN CUSTOMER IS REMOVED FOR ANY REASON, EXPLICITLY CALL CANCEL() ON BOTH ENDS
+    private void updateDevices(String msg) {
+        for (BluetoothDevice device : devices) {
+            // call cancel()
+            // call start()
+            // call mChatService.connect() on each device in the Set
+            // "deleteAll"
+            // update entire queue
+        }
+        // cancel
     }
 
     @Override
@@ -480,6 +498,7 @@ public class BluetoothFragment extends Fragment {
                 .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        devices.add(device);
         // Attempt to connect to the device
         mChatService.connect(device, secure);
     }
