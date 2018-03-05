@@ -92,6 +92,8 @@ public class BluetoothFragment extends Fragment {
 
     private Set<BluetoothDevice> devices = new HashSet<>();
 
+    private boolean isHost = false;
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -152,15 +154,19 @@ public class BluetoothFragment extends Fragment {
     }
 
     // TODO: WHEN CUSTOMER IS REMOVED FOR ANY REASON, EXPLICITLY CALL CANCEL() ON BOTH ENDS
-    private void updateDevices(String msg) {
+    private void updateDevices() {
         for (BluetoothDevice device : devices) {
-            // call cancel()
-            // call start()
-            // call mChatService.connect() on each device in the Set
-            // "deleteAll"
-            // update entire queue
+            mChatService.stop();
+            mChatService.start();
+            mChatService.connect(device, true);
+            sendMessage("deleteAll");
+
+            for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
+                String msg = mConversationArrayAdapter.getItem(i);
+                sendMessage(msg);
+            }
         }
-        // cancel
+        mChatService.stop();
     }
 
     @Override
@@ -171,6 +177,14 @@ public class BluetoothFragment extends Fragment {
         //mSendButton = view.findViewById(R.id.button_send);
         mHostButton = view.findViewById(R.id.host_button);
         mCustomerButton = view.findViewById(R.id.customer_button);
+
+        mHostButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                isHost = true;
+                Toast.makeText(getContext(), "Host mode enabled", Toast.LENGTH_SHORT).show();
+            }
+        });
 
         mQueue.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -423,7 +437,10 @@ public class BluetoothFragment extends Fragment {
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
                     String readMessage = new String(readBuf, 0, msg.arg1);
-                    if (readMessage.contains("delete")) {
+                    if (readMessage.equals("deleteAll")) {
+                        mConversationArrayAdapter.clear();
+                    }
+                    else if (readMessage.contains("delete")) {
                         mConversationArrayAdapter.remove(readMessage.replace("delete ", ""));
                     } else if (readMessage.contains("notify")) {
                         new AlertDialog.Builder(getContext())
@@ -438,6 +455,10 @@ public class BluetoothFragment extends Fragment {
                                 }).show();
                     } else
                         mConversationArrayAdapter.add(readMessage);
+
+                    if (isHost)
+                        updateDevices();
+
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
                     // save the connected device's name
