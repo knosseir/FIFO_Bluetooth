@@ -532,6 +532,10 @@ public class BluetoothFragment extends Fragment {
     private void connectDevice(String data, boolean secure) {
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(data);
+
+        if (device.getName().equals(mConnectedDeviceName))
+            return;
+
         // Attempt to connect to the device
         mChatService.connect(device, secure);
     }
