@@ -108,6 +108,7 @@ public class BluetoothFragment extends Fragment {
             Toast.makeText(activity, "Bluetooth is not available", Toast.LENGTH_LONG).show();
             activity.finish();
         }
+
     }
 
     @Override
@@ -122,6 +123,25 @@ public class BluetoothFragment extends Fragment {
         } else if (mChatService == null) {
             setupChat();
         }
+
+        /*
+        connectDevice("E4:32:CB:35:82:EE", true);
+        while(mChatService.getState() != BluetoothService.STATE_CONNECTED);
+        mChatService.stop();
+        mChatService.stop();
+        connectDevice("94:65:2D:DC:72:90", true);
+        while(mChatService.getState() != BluetoothService.STATE_CONNECTED);
+        mChatService.stop();
+        mChatService.stop();
+        connectDevice("E4:32:CB:35:82:EE", true);
+        while(mChatService.getState() != BluetoothService.STATE_CONNECTED);
+        mChatService.stop();
+        mChatService.stop();
+        connectDevice("94:65:2D:DC:72:90", true);
+        while(mChatService.getState() != BluetoothService.STATE_CONNECTED);
+        mChatService.stop();
+        mChatService.stop();
+        */
     }
 
     @Override
@@ -158,26 +178,18 @@ public class BluetoothFragment extends Fragment {
     private void updateDevices() {
         devices = mChatService.getDevices();
         for (String device : devices) {
-            // mChatService.stop();
-            // mChatService.start();
             Log.e("MAC Address 2", device);
             connectDevice(device, true);
+            while(mChatService.getState() != BluetoothService.STATE_CONNECTED);
             // mChatService.connect(device, true);
-
-            try {
-                wait(5000);
-            }
-            catch (InterruptedException e) {
-                Log.e("wait error", e.toString());
-            }
             sendMessage("deleteAll");
-
             for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
                 String msg = mConversationArrayAdapter.getItem(i);
                 sendMessage(msg);
             }
+            mChatService.stop();
         }
-        mChatService.stop();
+        mChatService.start();
     }
 
     @Override
@@ -541,9 +553,11 @@ public class BluetoothFragment extends Fragment {
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(data);
 
-        if (device.getName().equals(mConnectedDeviceName))
+        String s = device.getName();
+        Log.e("connecting to", s);
+        if (s.equals(mConnectedDeviceName)) {
             return;
-
+        }
         // Attempt to connect to the device
         mChatService.connect(device, secure);
     }
