@@ -179,6 +179,8 @@ public class DeviceListActivity extends Activity {
             Intent intent = new Intent();
             intent.putExtra(EXTRA_DEVICE_ADDRESS, address);
 
+            Log.e("MAC address 1", address);
+
             // set result and finish this activity
             setResult(Activity.RESULT_OK, intent);
             finish();

@@ -159,6 +159,7 @@ public class BluetoothFragment extends Fragment {
         for (String device : devices) {
             // mChatService.stop();
             // mChatService.start();
+            Log.e("MAC Address 2", device);
             connectDevice(device, true);
             // mChatService.connect(device, true);
             sendMessage("deleteAll");
