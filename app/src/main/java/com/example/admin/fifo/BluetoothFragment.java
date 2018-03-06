@@ -36,6 +36,7 @@ import android.widget.PopupWindow;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.Set;
@@ -162,6 +163,13 @@ public class BluetoothFragment extends Fragment {
             Log.e("MAC Address 2", device);
             connectDevice(device, true);
             // mChatService.connect(device, true);
+
+            try {
+                wait(5000);
+            }
+            catch (InterruptedException e) {
+                Log.e("wait error", e.toString());
+            }
             sendMessage("deleteAll");
 
             for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
