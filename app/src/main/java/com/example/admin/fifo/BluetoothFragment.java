@@ -90,7 +90,7 @@ public class BluetoothFragment extends Fragment {
      */
     private BluetoothService mChatService = null;
 
-    private Set<BluetoothDevice> devices = new HashSet<>();
+    private Set<String> devices = new HashSet<>();
 
     private boolean isHost = false;
 
@@ -156,10 +156,11 @@ public class BluetoothFragment extends Fragment {
     // TODO: WHEN CUSTOMER IS REMOVED FOR ANY REASON, EXPLICITLY CALL CANCEL() ON BOTH ENDS
     private void updateDevices() {
         devices = mChatService.getDevices();
-        for (BluetoothDevice device : devices) {
-            mChatService.stop();
-            mChatService.start();
-            mChatService.connect(device, true);
+        for (String device : devices) {
+            // mChatService.stop();
+            // mChatService.start();
+            connectDevice(device, true);
+            // mChatService.connect(device, true);
             sendMessage("deleteAll");
 
             for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
@@ -520,6 +521,13 @@ public class BluetoothFragment extends Fragment {
                 .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
+        // Attempt to connect to the device
+        mChatService.connect(device, secure);
+    }
+
+    private void connectDevice(String data, boolean secure) {
+        // Get the BluetoothDevice object
+        BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(data);
         // Attempt to connect to the device
         mChatService.connect(device, secure);
     }
