@@ -275,6 +275,7 @@ public class BluetoothService {
         Message msg = mHandler.obtainMessage(Constants.MESSAGE_TOAST);
         Bundle bundle = new Bundle();
         bundle.putString(Constants.TOAST, "Unable to connect device");
+        Log.e("ConnectFailed" , "Unable to connect device");
         msg.setData(bundle);
         mHandler.sendMessage(msg);
 
@@ -491,6 +492,7 @@ public class BluetoothService {
             mmInStream = tmpIn;
             mmOutStream = tmpOut;
             mState = STATE_CONNECTED;
+            Log.e(TAG, "connected");
         }
 
         public void run() {

@@ -178,16 +178,26 @@ public class BluetoothFragment extends Fragment {
     private void updateDevices() {
         devices = mChatService.getDevices();
         for (String device : devices) {
-            Log.e("MAC Address 2", device);
+            //Log.e("MAC Address 2", device);
             connectDevice(device, true);
-            while(mChatService.getState() != BluetoothService.STATE_CONNECTED);
+            int count = 1;
+            while(mChatService.getState() != BluetoothService.STATE_CONNECTED){
+                while(mChatService.getState() == BluetoothService.STATE_CONNECTING);
+                if((mChatService.getState() == BluetoothService.STATE_NONE) || (mChatService.getState() == BluetoothService.STATE_LISTEN)){
+                    count++;
+                    if ((count % 50000) == 0) {
+                        mChatService.stop();
+                        connectDevice(device, true);
+                    }
+                }
+            }
+            Log.e("Device", device);
             // mChatService.connect(device, true);
             sendMessage("deleteAll");
             for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
                 String msg = mConversationArrayAdapter.getItem(i);
                 sendMessage(msg);
             }
-            mChatService.stop();
         }
         mChatService.start();
     }
@@ -370,10 +380,12 @@ public class BluetoothFragment extends Fragment {
         if (message.length() > 0) {
             // Get the message bytes and tell the BluetoothService to write
             byte[] send = message.getBytes();
+            String str = new String(send);
             mChatService.write(send);
-
+            Log.e("send message", str);
             // Reset out string buffer to zero and clear the edit text field
             mOutStringBuffer.setLength(0);
+
         }
     }
 
@@ -554,12 +566,13 @@ public class BluetoothFragment extends Fragment {
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(data);
 
         String s = device.getName();
-        Log.e("connecting to", s);
+        Log.e("Connected to : ", s);
         if (s.equals(mConnectedDeviceName)) {
             return;
         }
         // Attempt to connect to the device
         mChatService.connect(device, secure);
+        Log.e("Connected to : ", s);
     }
 
     @Override
