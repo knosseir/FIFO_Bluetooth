@@ -53,7 +53,9 @@ public class BluetoothFragment extends Fragment {
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
     private static final int REQUEST_ENABLE_BT = 3;
 
-    private static final double AVERAGE_WAIT_TIME_PER_PERSON = 1.4; // minutes
+    private static final double AVERAGE_WAIT_TIME_PER_PERSON = 0.7; // minutes
+
+    TextView peopleAheadCount, eta;
 
     // Layout Views
     private ListView mQueue;
@@ -312,8 +314,8 @@ public class BluetoothFragment extends Fragment {
 
                     final PopupWindow pw = new PopupWindow(layout, ActionBar.LayoutParams.MATCH_PARENT, ActionBar.LayoutParams.MATCH_PARENT, true);
 
-                    TextView peopleAheadCount = layout.findViewById(R.id.people_ahead_count);
-                    TextView eta = layout.findViewById(R.id.eta);
+                    peopleAheadCount = layout.findViewById(R.id.people_ahead_count);
+                    eta = layout.findViewById(R.id.eta);
                     Button exit = layout.findViewById(R.id.exit_queue_button);
 
                     peopleAheadCount.setText("There are " + String.valueOf(mConversationArrayAdapter.getCount()) + " people ahead of you in line.");
@@ -328,7 +330,7 @@ public class BluetoothFragment extends Fragment {
                         }
                     });
 
-                    pw.setBackgroundDrawable(new ColorDrawable(Color.LTGRAY));
+                    pw.setBackgroundDrawable(new ColorDrawable(Color.WHITE));
                     pw.setTouchInterceptor(new View.OnTouchListener() {
                         public boolean onTouch(View v, MotionEvent event) {
                             if (event.getAction() == MotionEvent.ACTION_OUTSIDE) {
@@ -450,7 +452,6 @@ public class BluetoothFragment extends Fragment {
                     switch (msg.arg1) {
                         case BluetoothService.STATE_CONNECTED:
                             setStatus("Connected to " + mConnectedDeviceName);
-                            mConversationArrayAdapter.clear();
                             break;
                         case BluetoothService.STATE_CONNECTING:
                             setStatus("connecting...");
@@ -465,8 +466,8 @@ public class BluetoothFragment extends Fragment {
                     byte[] writeBuf = (byte[]) msg.obj;
                     // construct a string from the buffer
                     String writeMessage = new String(writeBuf);
-                    if (!writeMessage.contains("delete") && !writeMessage.contains("notify"))
-                        mConversationArrayAdapter.add(writeMessage);
+                    // if (!writeMessage.contains("delete") && !writeMessage.contains("notify"))
+                        // mConversationArrayAdapter.add(writeMessage);
                     break;
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
@@ -488,8 +489,23 @@ public class BluetoothFragment extends Fragment {
                                         getActivity().finishAffinity();
                                     }
                                 }).show();
-                    } else
+                    }
+                    else {
+                        for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
+                            String s = mConversationArrayAdapter.getItem(i);
+                            Log.e("s added: ", s);
+                            Log.e("readMessage added: ", readMessage);
+
+                            if (s.equals(readMessage)) {    // don't add duplicate customer names
+                                return;
+                            }
+                        }
+                        if (!isHost) {
+                            peopleAheadCount.setText("There are " + String.valueOf(mConversationArrayAdapter.getCount()) + " people ahead of you in line.");
+                            eta.setText(String.valueOf("ETA: " + AVERAGE_WAIT_TIME_PER_PERSON * mConversationArrayAdapter.getCount()) + " minutes");
+                        }
                         mConversationArrayAdapter.add(readMessage);
+                    }
 
                     if (isHost)
                         updateDevices();
@@ -587,17 +603,6 @@ public class BluetoothFragment extends Fragment {
                 // Launch the DeviceListActivity to see devices and do scan
                 Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
                 startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_SECURE);
-                return true;
-            }
-            case R.id.insecure_connect_scan: {
-                // Launch the DeviceListActivity to see devices and do scan
-                Intent serverIntent = new Intent(getActivity(), DeviceListActivity.class);
-                startActivityForResult(serverIntent, REQUEST_CONNECT_DEVICE_INSECURE);
-                return true;
-            }
-            case R.id.discoverable: {
-                // Ensure this device is discoverable by others
-                ensureDiscoverable();
                 return true;
             }
         }

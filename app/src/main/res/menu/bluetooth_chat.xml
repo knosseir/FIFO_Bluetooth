@@ -19,16 +19,6 @@
         android:id="@+id/secure_connect_scan"
         android:icon="@drawable/ic_action_device_access_bluetooth_searching"
         android:showAsAction="always"
-        android:title="Secure connect"/>
-
-    <item
-        android:id="@+id/insecure_connect_scan"
-        android:showAsAction="never"
-        android:title="Insecure connect"/>
-
-    <item
-        android:id="@+id/discoverable"
-        android:showAsAction="never"
-        android:title="Discoverable"/>
+        android:title="Connect"/>
 
 </menu>
