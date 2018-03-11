@@ -1,37 +1,60 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
+
+    <TextView
+        android:id="@+id/textView3"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/eta"
+        android:layout_marginTop="47dp"
+        android:fontFamily="monospace"
+        android:text="FIF"
+        android:textColor="@color/colorPrimary"
+        android:textSize="125dp" />
+
 
     <TextView
         android:id="@+id/people_ahead_count"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/textView3"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="96dp"
-        android:layout_marginLeft="8dp"
-        android:layout_marginEnd="8dp"
+        android:layout_marginTop="28dp"
+        android:background="@color/colorAccent"
         android:hint="Loading number of people ahead of you..."
         android:textSize="20sp" />
 
     <TextView
         android:id="@+id/eta"
         android:layout_width="wrap_content"
-        android:layout_height="17dp"
-        android:layout_below="@id/people_ahead_count"
+        android:layout_height="wrap_content"
+        android:layout_below="@+id/people_ahead_count"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="48dp"
-        android:hint="Loading estimated time remaining:"
-        android:textSize="16sp" />
+        android:layout_marginTop="20dp"
+        android:hint="Loading estimated time remaining..."
+        android:textSize="20sp" />
 
     <Button
         android:id="@+id/exit_queue_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_below="@id/eta"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="96dp"
+        android:layout_alignEnd="@+id/people_ahead_count"
+        android:layout_alignParentBottom="true"
+        android:layout_marginBottom="46dp"
+        android:layout_marginEnd="15dp"
         android:text="Exit Queue" />
+
+    <ImageView
+        android:id="@+id/imageView2"
+        android:layout_width="100dp"
+        android:layout_height="100dp"
+        android:layout_alignBottom="@+id/textView3"
+        android:layout_alignStart="@+id/exit_queue_button"
+        android:layout_marginBottom="25dp"
+        app:srcCompat="@drawable/icon" />
 
 </RelativeLayout>
