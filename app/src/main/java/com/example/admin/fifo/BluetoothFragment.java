@@ -40,6 +40,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 
@@ -64,7 +65,8 @@ public class BluetoothFragment extends Fragment {
     private EditText mNameEditText;
     private Button mHostButton;
     private Button mCustomerButton;
-    Map<String,String> customerMap = new HashMap<String,String>();
+    public Map<String,String> customerMap = new HashMap<>();
+    public Map<String,String> MACMap = new HashMap<>();
 
     /**
      * Name of user
@@ -94,9 +96,9 @@ public class BluetoothFragment extends Fragment {
     /**
      * Member object for the chat services
      */
-    private BluetoothService mChatService = null;
+    public BluetoothService mChatService = null;
 
-    private Set<String> devices = new HashSet<>();
+    public Set<String> devices = new HashSet<>();
 
     private boolean isHost = false;
 
@@ -183,11 +185,15 @@ public class BluetoothFragment extends Fragment {
     private void updateDevices() {
         devices = mChatService.getDevices();
         for (String device : devices) {
-            //Log.e("MAC Address 2", device);
+            //mChatService.stop();
+            Log.e("MAC Address 2", device);
             connectDevice(device, true);
             int count = 1;
             while(mChatService.getState() != BluetoothService.STATE_CONNECTED){
                 while(mChatService.getState() == BluetoothService.STATE_CONNECTING);
+                if(count == 500000){
+                    return;
+                }
                 if((mChatService.getState() == BluetoothService.STATE_NONE) || (mChatService.getState() == BluetoothService.STATE_LISTEN)){
                     count++;
                     if ((count % 50000) == 0) {
@@ -198,11 +204,22 @@ public class BluetoothFragment extends Fragment {
             }
             Log.e("Device", device);
             sendMessage("deleteAll");
+            boolean isPresent = false;
             for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
                 String msg = mConversationArrayAdapter.getItem(i);
                 sendMessage(msg);
+                if(customerMap.get(mConnectedDeviceName).equals(msg)){
+                    isPresent = true;
+                    if(MACMap.get(msg) == null) {
+                        MACMap.put(msg, device);
+                    }
+                }
+            }
+            if(!isPresent){
+                sendMessage("notify");
             }
         }
+        mChatService.stop();
         mChatService.start();
     }
 
@@ -256,68 +273,34 @@ public class BluetoothFragment extends Fragment {
                 Button bump = layout.findViewById(R.id.bump);
                 Button kick = layout.findViewById(R.id.kick);
 
+
                 checkout.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(getActivity(), adapterView.getItemAtPosition(i).toString() + " will be checked out.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), adapterView.getItemAtPosition(i).toString() + " has been checked out.", Toast.LENGTH_SHORT).show();
                         mConversationArrayAdapter.remove(adapterView.getItemAtPosition(i).toString());
-                        devices = mChatService.getDevices();
-                        for(String device : devices) {
-                            connectDevice(device, true);
-                            int count = 1;
-                            while(mChatService.getState() != BluetoothService.STATE_CONNECTED){
-                                while(mChatService.getState() == BluetoothService.STATE_CONNECTING);
-                                if((mChatService.getState() == BluetoothService.STATE_NONE) || (mChatService.getState() == BluetoothService.STATE_LISTEN)){
-                                    count++;
-                                    if ((count % 50000) == 0) {
-                                        mChatService.stop();
-                                        connectDevice(device, true);
-                                    }
-                                }
-                            }
-                            sendMessage("delete " + mUserName);
-                            if (mUserName == customerMap.get(mConnectedDeviceName)){
-                                sendMessage("notify");
-                            }
-                        }
+                        updateDevices();
                     }
                 });
 
                 bump.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(getActivity(), adapterView.getItemAtPosition(i).toString() + " will be bumped.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), adapterView.getItemAtPosition(i).toString() + " has been bumped.", Toast.LENGTH_SHORT).show();
                         String s = adapterView.getItemAtPosition(i).toString();
                         mConversationArrayAdapter.remove(s);
                         mConversationArrayAdapter.add(s);
-                        //updateDevices();
+                        updateDevices();
                     }
                 });
 
                 kick.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        Toast.makeText(getActivity(), adapterView.getItemAtPosition(i).toString() + " will be kicked out.", Toast.LENGTH_SHORT).show();
+                        Toast.makeText(getActivity(), adapterView.getItemAtPosition(i).toString() + " has been kicked.", Toast.LENGTH_SHORT).show();
                         mConversationArrayAdapter.remove(adapterView.getItemAtPosition(i).toString());
-                        devices = mChatService.getDevices();
-                        for(String device : devices) {
-                            connectDevice(device, true);
-                            int count = 1;
-                            while(mChatService.getState() != BluetoothService.STATE_CONNECTED){
-                                while(mChatService.getState() == BluetoothService.STATE_CONNECTING);
-                                if((mChatService.getState() == BluetoothService.STATE_NONE) || (mChatService.getState() == BluetoothService.STATE_LISTEN)){
-                                    count++;
-                                    if ((count % 50000) == 0) {
-                                        mChatService.stop();
-                                        connectDevice(device, true);
-                                    }
-                                }
-                            }
-                            sendMessage("delete " + mUserName);
-                            if (mUserName == customerMap.get(mConnectedDeviceName)){
-                                sendMessage("notify");
-                            }
-                        }
+                        sendMessage("notify");
+                        updateDevices();
                     }
                 });
             }
@@ -363,23 +346,25 @@ public class BluetoothFragment extends Fragment {
                         public void onClick(View view) {
                             mConversationArrayAdapter.remove(mUserName);
                             devices = mChatService.getDevices();
-                            for(String device : devices){
-                                connectDevice(device, true);
-                                int count = 1;
-                                while(mChatService.getState() != BluetoothService.STATE_CONNECTED){
-                                    while(mChatService.getState() == BluetoothService.STATE_CONNECTING);
-                                    if((mChatService.getState() == BluetoothService.STATE_NONE) || (mChatService.getState() == BluetoothService.STATE_LISTEN)){
-                                        count++;
-                                        if ((count % 50000) == 0) {
-                                            mChatService.stop();
-                                            connectDevice(device, true);
-                                        }
+                            Object[] items = devices.toArray();
+                            connectDevice((String)items[0], true);
+                            int count = 1;
+                            while(mChatService.getState() != BluetoothService.STATE_CONNECTED){
+                                while(mChatService.getState() == BluetoothService.STATE_CONNECTING);
+                                if(count == 500000){
+                                    return;
+                                }
+                                if((mChatService.getState() == BluetoothService.STATE_NONE) || (mChatService.getState() == BluetoothService.STATE_LISTEN)){
+                                    count++;
+                                    if ((count % 50000) == 0) {
+                                        mChatService.stop();
+                                        connectDevice((String)items[0], true);
                                     }
                                 }
-                                sendMessage("delete " + mUserName);
-                                Toast.makeText(getContext(), "Thanks for shopping!", Toast.LENGTH_LONG);
-                                getActivity().finishAffinity();
                             }
+                            sendMessage("delete " + mUserName);
+                            Toast.makeText(getContext(), "Thanks for shopping!", Toast.LENGTH_LONG);
+                            getActivity().finishAffinity();
                         }
                     });
 
@@ -621,28 +606,28 @@ public class BluetoothFragment extends Fragment {
      * @param data   An {@link Intent} with {@link DeviceListActivity#EXTRA_DEVICE_ADDRESS} extra.
      * @param secure Socket Security type - Secure (true) , Insecure (false)
      */
-    private void connectDevice(Intent data, boolean secure) {
+    public void connectDevice(Intent data, boolean secure) {
         // Get the device MAC address
         String address = data.getExtras()
                 .getString(DeviceListActivity.EXTRA_DEVICE_ADDRESS);
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(address);
 
-        if (device.getName().equals(mConnectedDeviceName))
-            return;
+       // if (device.getName().equals(mConnectedDeviceName))
+         //   return;
         // Attempt to connect to the device
         mChatService.connect(device, secure);
     }
 
-    private void connectDevice(String data, boolean secure) {
+    public void connectDevice(String data, boolean secure) {
         // Get the BluetoothDevice object
         BluetoothDevice device = mBluetoothAdapter.getRemoteDevice(data);
 
         String s = device.getName();
-        Log.e("Connected to : ", s);
-        if (s.equals(mConnectedDeviceName)) {
-            return;
-        }
+        //Log.e("Connected to : ", s);
+       // if (s.equals(mConnectedDeviceName)) {
+        //    return;
+        //}
         // Attempt to connect to the device
         mChatService.connect(device, secure);
         Log.e("Connected to : ", s);

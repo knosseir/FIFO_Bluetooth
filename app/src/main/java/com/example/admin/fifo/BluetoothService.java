@@ -81,6 +81,7 @@ public class BluetoothService {
     public BluetoothService(Context context, Handler handler) {
         mAdapter = BluetoothAdapter.getDefaultAdapter();
         mState = STATE_NONE;
+        Log.e("STATE", "NONE");
         mNewState = mState;
         mHandler = handler;
     }
@@ -280,6 +281,7 @@ public class BluetoothService {
         mHandler.sendMessage(msg);
 
         mState = STATE_NONE;
+        Log.e("STATE", "NONE");
         // Update UI title
         updateUserInterfaceTitle();
 
@@ -299,6 +301,7 @@ public class BluetoothService {
         mHandler.sendMessage(msg);
 
         mState = STATE_NONE;
+        Log.e("STATE", "NONE");
         // Update UI title
         updateUserInterfaceTitle();
 
