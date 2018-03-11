@@ -288,9 +288,9 @@ public class BluetoothFragment extends Fragment {
                     public void onClick(View view) {
                         Toast.makeText(getActivity(), adapterView.getItemAtPosition(i).toString() + " will be bumped.", Toast.LENGTH_SHORT).show();
                         String s = adapterView.getItemAtPosition(i).toString();
-                        mConversationArrayAdapter.remove(adapterView.getItemAtPosition(i).toString());
+                        mConversationArrayAdapter.remove(s);
                         mConversationArrayAdapter.add(s);
-                        updateDevices();
+                        //updateDevices();
                     }
                 });
 
