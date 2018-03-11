@@ -220,6 +220,10 @@ public class BluetoothService {
         return devices;
     }
 
+    public void removeDevice(String device){
+        devices.remove(device);
+    }
+
     /**
      * Stop all threads
      */

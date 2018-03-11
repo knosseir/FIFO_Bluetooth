@@ -56,7 +56,7 @@ public class BluetoothFragment extends Fragment {
     private static final int REQUEST_CONNECT_DEVICE_INSECURE = 2;
     private static final int REQUEST_ENABLE_BT = 3;
 
-    private static final double AVERAGE_WAIT_TIME_PER_PERSON = 0.7; // minutes
+    private static final double AVERAGE_WAIT_TIME_PER_PERSON = 1; // minutes
 
     TextView peopleAheadCount, eta;
 
@@ -65,8 +65,9 @@ public class BluetoothFragment extends Fragment {
     private EditText mNameEditText;
     private Button mHostButton;
     private Button mCustomerButton;
-    public Map<String,String> customerMap = new HashMap<>();
-    public Map<String,String> MACMap = new HashMap<>();
+    private Map<String,String> customerMap = new HashMap<>();
+    private Map<String,String> MACMap = new HashMap<>();
+    private int position;
 
     /**
      * Name of user
@@ -96,9 +97,9 @@ public class BluetoothFragment extends Fragment {
     /**
      * Member object for the chat services
      */
-    public BluetoothService mChatService = null;
+    private BluetoothService mChatService = null;
 
-    public Set<String> devices = new HashSet<>();
+    private Set<String> devices = new HashSet<>();
 
     private boolean isHost = false;
 
@@ -186,6 +187,9 @@ public class BluetoothFragment extends Fragment {
         devices = mChatService.getDevices();
         for (String device : devices) {
             //mChatService.stop();
+            if(device == ""){
+                continue;
+            }
             Log.e("MAC Address 2", device);
             connectDevice(device, true);
             int count = 1;
@@ -203,21 +207,26 @@ public class BluetoothFragment extends Fragment {
                 }
             }
             Log.e("Device", device);
-            sendMessage("deleteAll");
             boolean isPresent = false;
+            String msg ="deleteAll ";
             for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
-                String msg = mConversationArrayAdapter.getItem(i);
-                sendMessage(msg);
-                if(customerMap.get(mConnectedDeviceName).equals(msg)){
+                String curr = mConversationArrayAdapter.getItem(i);
+                msg += curr;
+                msg += " ";
+                if(customerMap.get(mConnectedDeviceName).equals(curr)){
                     isPresent = true;
-                    if(MACMap.get(msg) == null) {
-                        MACMap.put(msg, device);
+                    if(MACMap.get(curr) == null) {
+                        MACMap.put(curr, device);
                     }
                 }
             }
-            if(!isPresent){
-                sendMessage("notify");
+            if(mConversationArrayAdapter.getCount() > 0 && customerMap.get(mConnectedDeviceName).equals(mConversationArrayAdapter.getItem(0))){
+                msg += "fifo ";
+            } else if(!isPresent){
+                msg += "notify ";
+                mChatService.removeDevice(mConnectedDeviceName);
             }
+            sendMessage(msg);
         }
         mChatService.stop();
         mChatService.start();
@@ -299,7 +308,6 @@ public class BluetoothFragment extends Fragment {
                     public void onClick(View view) {
                         Toast.makeText(getActivity(), adapterView.getItemAtPosition(i).toString() + " has been kicked.", Toast.LENGTH_SHORT).show();
                         mConversationArrayAdapter.remove(adapterView.getItemAtPosition(i).toString());
-                        sendMessage("notify");
                         updateDevices();
                     }
                 });
@@ -339,8 +347,13 @@ public class BluetoothFragment extends Fragment {
                     eta = layout.findViewById(R.id.eta);
                     Button exit = layout.findViewById(R.id.exit_queue_button);
 
-                    peopleAheadCount.setText("There are " + String.valueOf(mConversationArrayAdapter.getCount()) + " people ahead of you in line.");
-                    eta.setText(String.valueOf("ETA: " + AVERAGE_WAIT_TIME_PER_PERSON * mConversationArrayAdapter.getCount()) + " minutes");
+                    for(int i = 0; i < mConversationArrayAdapter.getCount(); i++){
+                        if(mUserName.equals(mConversationArrayAdapter.getItem(i))) {
+                            position = i;
+                        }
+                    }
+                    peopleAheadCount.setText("There are " + Integer.toString(position) + " people ahead of you in line.");
+                    eta.setText(String.valueOf("ETA: " + AVERAGE_WAIT_TIME_PER_PERSON * position) + " minutes");
                     exit.setOnClickListener(new View.OnClickListener() {
                         @Override
                         public void onClick(View view) {
@@ -419,13 +432,15 @@ public class BluetoothFragment extends Fragment {
         // check that there's actually something to send
         if (message.length() > 0) {
             // Get the message bytes and tell the BluetoothService to write
+            //message += "\0";
             byte[] send = message.getBytes();
+            message.length();
             String str = new String(send);
+            //str += "\0";
             mChatService.write(send);
             Log.e("send message", str);
             // Reset out string buffer to zero and clear the edit text field
             mOutStringBuffer.setLength(0);
-
         }
     }
 
@@ -510,47 +525,70 @@ public class BluetoothFragment extends Fragment {
                 case Constants.MESSAGE_READ:
                     byte[] readBuf = (byte[]) msg.obj;
                     // construct a string from the valid bytes in the buffer
-                    String readMessage = new String(readBuf, 0, msg.arg1);
-                    if (readMessage.equals("deleteAll") && !isHost) {
-                        mConversationArrayAdapter.clear();
-                    }
-                    else if (readMessage.contains("delete")) {
-                        mConversationArrayAdapter.remove(readMessage.replace("delete ", ""));
-                    } else if (readMessage.contains("notify")) {
-                        new AlertDialog.Builder(getContext())
-                                .setTitle("Notice")
-                                .setMessage("You have been removed from the queue.")
-                                .setPositiveButton("OK", new DialogInterface.OnClickListener() {
-                                    @Override
-                                    public void onClick(DialogInterface dialogInterface, int i) {
-                                        Toast.makeText(getContext(), "Thanks for shopping!", Toast.LENGTH_LONG);
-                                        getActivity().finishAffinity();
-                                    }
-                                }).show();
-                    }
-                    else {
-                        for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
-                            String s = mConversationArrayAdapter.getItem(i);
-                            Log.e("s added: ", s);
-                            Log.e("readMessage added: ", readMessage);
+                    String tempMessage = new String(readBuf, 0, msg.arg1);
+                    Log.e("full message", tempMessage);
+                    String  readMessage[] = tempMessage.split(" ");
+                    Log.e("message size", Integer.toString(readMessage.length));
+                    outerloop:
+                    for(int z = 0; z < readMessage.length; z++) {
+                        Log.e("message read", readMessage[z]);
+                        if (readMessage[z].contains("deleteAll") && !isHost) {
+                            mConversationArrayAdapter.clear();
+                        } else if (readMessage[z].contains("delete")) {
+                            mConversationArrayAdapter.remove(readMessage[z].replace("delete ", ""));
+                        } else if (readMessage[z].contains("notify")) {
+                            new AlertDialog.Builder(getContext())
+                                    .setTitle("Notice")
+                                    .setMessage("You have been removed from the queue.")
+                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                            Toast.makeText(getContext(), "Thanks for shopping!", Toast.LENGTH_LONG);
+                                            getActivity().finishAffinity();
+                                        }
+                                    }).show();
+                        } else if (readMessage[z].contains("fifo")) {
+                            new AlertDialog.Builder(getContext())
+                                    .setTitle("Notice")
+                                    .setMessage("You are at the front of the line.\nPlease proceed to the register.")
+                                    .setPositiveButton("OK", new DialogInterface.OnClickListener() {
+                                        @Override
+                                        public void onClick(DialogInterface dialogInterface, int i) {
+                                        }
+                                    }).show();
+                        } else {
+                            for (int i = 0; i < mConversationArrayAdapter.getCount(); i++) {
+                                String s = mConversationArrayAdapter.getItem(i);
+                                Log.e("s added: ", s);
+                                Log.e("readMessage added: ", readMessage[z]);
 
-                            if (s.equals(readMessage)) {    // don't add duplicate customer names
-                                return;
+                                if (s.equals(readMessage[z])) {    // don't add duplicate customer names
+                                    break outerloop;
+                                }
                             }
-                        }
-                        if (!isHost) {
-                            peopleAheadCount.setText("There are " + String.valueOf(mConversationArrayAdapter.getCount()) + " people ahead of you in line.");
-                            eta.setText(String.valueOf("ETA: " + AVERAGE_WAIT_TIME_PER_PERSON * mConversationArrayAdapter.getCount()) + " minutes");
-                        }
-                        if (isHost){
-                            customerMap.put(mConnectedDeviceName, readMessage);
-                        }
-                        mConversationArrayAdapter.add(readMessage);
+                            if (!isHost) {
+                                peopleAheadCount.setText("There are " + String.valueOf(mConversationArrayAdapter.getCount()) + " people ahead of you in line.");
+                                eta.setText(String.valueOf("ETA: " + AVERAGE_WAIT_TIME_PER_PERSON * mConversationArrayAdapter.getCount()) + " minutes");
+                            }
+                            if (isHost) {
+                                customerMap.put(mConnectedDeviceName, readMessage[z]);
+                            }
+                            mConversationArrayAdapter.add(readMessage[z]);
 
+                        }
                     }
 
                     if (isHost)
-                        updateDevices();
+                            updateDevices();
+                    if (!isHost){
+                        for(int i = 0; i < mConversationArrayAdapter.getCount(); i++){
+                            if(mUserName.equals(mConversationArrayAdapter.getItem(i))) {
+                                position = i;
+                            }
+                        }
+                        peopleAheadCount.setText("There are " + Integer.toString(position) + " people ahead of you in line.");
+                        eta.setText(String.valueOf("ETA: " + AVERAGE_WAIT_TIME_PER_PERSON * position) + " minutes");
+                    }
 
                     break;
                 case Constants.MESSAGE_DEVICE_NAME:
