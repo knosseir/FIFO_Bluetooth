@@ -55,22 +55,23 @@
         android:id="@+id/textView2"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_above="@+id/customer_button"
-        android:layout_marginBottom="31dp"
-        android:layout_toStartOf="@+id/imageView"
+        android:layout_alignParentTop="true"
+        android:layout_alignStart="@+id/in"
+        android:layout_marginStart="26dp"
+        android:layout_marginTop="54dp"
         android:fontFamily="monospace"
         android:text="FIF"
         android:textColor="@color/colorPrimary"
-        android:textSize="125dp" />
+        android:textSize="100dp" />
 
     <ImageView
         android:id="@+id/imageView"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_alignBottom="@+id/textView2"
-        android:layout_alignParentEnd="true"
-        android:layout_marginBottom="29dp"
-        android:layout_marginEnd="11dp"
+        android:layout_alignEnd="@+id/in"
+        android:layout_alignTop="@+id/textView2"
+        android:layout_marginEnd="40dp"
+        android:layout_marginTop="17dp"
         app:srcCompat="@drawable/icon" />
 
 </RelativeLayout>
