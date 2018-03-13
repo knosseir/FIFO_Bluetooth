@@ -1,37 +1,29 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout
     xmlns:android="http://schemas.android.com/apk/res/android" android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/colorAccent">
-
+    android:layout_height="match_parent">
 
     <Button
         android:id="@+id/checkout"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
-        android:layout_centerHorizontal="true"
-        android:background="@color/colorPrimary"
-        android:text="Checkout" />
-
+        android:background="#40ff80"
+        android:text="Checkout"
+        android:layout_marginBottom="6dp"/>
     <Button
         android:id="@+id/bump"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/checkout"
-        android:layout_below="@+id/checkout"
-        android:layout_marginTop="11dp"
-        android:background="#BEBEBE"
-        android:text="Bump" />
-
+        android:background="#fff070"
+        android:text="Bump"
+        android:layout_below="@id/checkout"
+        android:layout_marginBottom="6dp"/>
     <Button
         android:id="@+id/kick"
-        android:layout_width="wrap_content"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_alignStart="@+id/bump"
-        android:layout_below="@+id/bump"
-        android:layout_marginTop="11dp"
         android:background="#ff6550"
-        android:text="Kick" />
+        android:layout_below="@id/bump"
+        android:text="Kick"/>
 
 </RelativeLayout>

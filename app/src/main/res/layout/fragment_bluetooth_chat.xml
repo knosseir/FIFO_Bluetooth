@@ -13,20 +13,18 @@
         android:id="@+id/edit_text_name"
         android:layout_width="208dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentTop="true"
+        android:layout_below="@+id/textView2"
         android:layout_centerHorizontal="true"
         android:layout_gravity="center"
-        android:layout_marginTop="232dp"
         android:hint="Please enter your name" />
 
     <Button
         android:id="@+id/customer_button"
         android:layout_width="125dp"
         android:layout_height="wrap_content"
-        android:layout_alignParentStart="true"
+        android:layout_alignStart="@+id/edit_text_name"
         android:layout_below="@+id/edit_text_name"
         android:layout_gravity="center_vertical"
-        android:layout_marginStart="46dp"
         android:layout_weight="0.5"
         android:text="Customer" />
 
@@ -53,12 +51,11 @@
 
     <TextView
         android:id="@+id/textView2"
-        android:layout_width="wrap_content"
+        android:layout_width="fill_parent"
         android:layout_height="wrap_content"
+        android:layout_alignParentStart="true"
         android:layout_alignParentTop="true"
-        android:layout_alignStart="@+id/in"
-        android:layout_marginStart="26dp"
-        android:layout_marginTop="54dp"
+        android:layout_marginTop="49dp"
         android:fontFamily="monospace"
         android:text="FIF"
         android:textColor="@color/colorPrimary"
@@ -68,10 +65,9 @@
         android:id="@+id/imageView"
         android:layout_width="100dp"
         android:layout_height="100dp"
-        android:layout_alignEnd="@+id/in"
+        android:layout_alignStart="@+id/host_button"
         android:layout_alignTop="@+id/textView2"
-        android:layout_marginEnd="40dp"
-        android:layout_marginTop="17dp"
+        android:layout_marginTop="16dp"
         app:srcCompat="@drawable/icon" />
 
 </RelativeLayout>
